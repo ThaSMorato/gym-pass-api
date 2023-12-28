@@ -55,7 +55,7 @@ describe('Authenticate Use Case', () => {
       )
     })
 
-    it('should give an error if wrong passwords is passed', async () => {
+    it('should return user if correct credentials passed', async () => {
       const password_hash = await hash(user.password, 6)
 
       const responseUser = {
