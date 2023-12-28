@@ -10,7 +10,9 @@
     "prisma": "prisma",
     "prisma:type": "prisma generate",
     "migrate:dev": "prisma migrate dev",
-    "studio": "prisma studio"
+    "studio": "prisma studio",
+    "test" : "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "Thales Silva Morato <ThaSMorato>",
@@ -22,7 +24,9 @@
     "eslint": "8.56.0",
     "tsup": "8.0.1",
     "tsx": "4.7.0",
-    "typescript": "5.3.3"
+    "typescript": "5.3.3",
+    "vite-tsconfig-paths": "4.2.2",
+    "vitest": "1.1.0"
   },
   "dependencies": {
     "@prisma/client": "5.7.1",
