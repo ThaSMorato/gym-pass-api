@@ -11,8 +11,9 @@
     "prisma:type": "prisma generate",
     "migrate:dev": "prisma migrate dev",
     "studio": "prisma studio",
-    "test" : "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage"
   },
   "keywords": [],
   "author": "Thales Silva Morato <ThaSMorato>",
@@ -21,6 +22,7 @@
     "@rocketseat/eslint-config": "2.1.0",
     "@types/bcryptjs": "2.4.6",
     "@types/node": "20.10.5",
+    "@vitest/coverage-v8": "1.1.0",
     "eslint": "8.56.0",
     "tsup": "8.0.1",
     "tsx": "4.7.0",

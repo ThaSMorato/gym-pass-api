@@ -77,7 +77,7 @@ describe('Register Use Case', () => {
 
       await registerUseCase.execute(user)
 
-      expect(() =>
+      await expect(() =>
         registerUseCase.execute({
           name: 'Not Jhon Doe',
           email: user.email,
