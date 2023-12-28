@@ -17,16 +17,20 @@ const repository = {
   findByEmail,
 }
 
+let sut: AuthenticateUseCase
+let inMemoryUserRepository: InMemoryUsersRepository
+
 describe('Authenticate Use Case', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   describe('Unity tests', () => {
+    beforeEach(() => {
+      sut = new AuthenticateUseCase(repository)
+    })
     it('should give an error if findByEmail returns null', async () => {
       findByEmail.mockResolvedValue(null)
-
-      const sut = new AuthenticateUseCase(repository)
 
       await expect(() => sut.execute(user)).rejects.toBeInstanceOf(
         IvalidCredentialsError,
@@ -45,8 +49,6 @@ describe('Authenticate Use Case', () => {
 
       findByEmail.mockResolvedValue(responseUser)
 
-      const sut = new AuthenticateUseCase(repository)
-
       await expect(() => sut.execute(user)).rejects.toBeInstanceOf(
         IvalidCredentialsError,
       )
@@ -64,8 +66,6 @@ describe('Authenticate Use Case', () => {
 
       findByEmail.mockResolvedValue(responseUser)
 
-      const sut = new AuthenticateUseCase(repository)
-
       const { user: returnedUser } = await sut.execute(user)
 
       expect(returnedUser).toEqual(responseUser)
@@ -73,14 +73,15 @@ describe('Authenticate Use Case', () => {
   })
 
   describe('Integration tests', () => {
-    it('should be able to authenticate', async () => {
-      const inMemoryUserRepository = new InMemoryUsersRepository()
+    beforeEach(() => {
+      inMemoryUserRepository = new InMemoryUsersRepository()
+      sut = new AuthenticateUseCase(inMemoryUserRepository)
+    })
 
+    it('should be able to authenticate', async () => {
       const password_hash = await hash(user.password, 6)
 
       await inMemoryUserRepository.create({ ...user, password_hash })
-
-      const sut = new AuthenticateUseCase(inMemoryUserRepository)
 
       const { user: userResponse } = await sut.execute(user)
 
@@ -93,22 +94,14 @@ describe('Authenticate Use Case', () => {
       )
     })
     it('should not be able to authenticate with a wrong email', async () => {
-      const inMemoryUserRepository = new InMemoryUsersRepository()
-
-      const sut = new AuthenticateUseCase(inMemoryUserRepository)
-
       await expect(() =>
         sut.execute({ ...user, email: 'notjhon@doe.com' }),
       ).rejects.toBeInstanceOf(IvalidCredentialsError)
     })
     it('should not be able to authenticate with a wrong password', async () => {
-      const inMemoryUserRepository = new InMemoryUsersRepository()
-
       const password_hash = await hash(user.password, 6)
 
       await inMemoryUserRepository.create({ ...user, password_hash })
-
-      const sut = new AuthenticateUseCase(inMemoryUserRepository)
 
       await expect(() =>
         sut.execute({ ...user, password: 'not_the_password' }),

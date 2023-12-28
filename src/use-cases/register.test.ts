@@ -25,16 +25,21 @@ const repository = {
   findByEmail,
 }
 
+let inMemoryUserRepository: InMemoryUsersRepository
+let sut: RegisterUseCase
+
 describe('Register Use Case', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   describe('Unity tests', () => {
-    it('should hash user password upon registration', async () => {
-      const registerUseCase = new RegisterUseCase(repository)
+    beforeEach(() => {
+      sut = new RegisterUseCase(repository)
+    })
 
-      const { user: userResponse } = await registerUseCase.execute(user)
+    it('should hash user password upon registration', async () => {
+      const { user: userResponse } = await sut.execute(user)
 
       const isPasswordCorrectlyHashed = await compare(
         user.password,
@@ -46,9 +51,7 @@ describe('Register Use Case', () => {
 
     describe('Create flow', () => {
       it('should call create function if the user is not already created', async () => {
-        const registerUseCase = new RegisterUseCase(repository)
-
-        await registerUseCase.execute(user)
+        await sut.execute(user)
 
         expect(findByEmail).toBeCalledWith(user.email)
         expect(create).toBeCalledTimes(1)
@@ -57,10 +60,8 @@ describe('Register Use Case', () => {
       it('should not call create and raise an error if user is already created', async () => {
         findByEmail.mockResolvedValue(user)
 
-        const registerUseCase = new RegisterUseCase(repository)
-
         try {
-          await registerUseCase.execute(user)
+          await sut.execute(user)
         } catch (_) {
           expect(findByEmail).toBeCalledWith(user.email)
           expect(create).not.toBeCalled()
@@ -70,15 +71,16 @@ describe('Register Use Case', () => {
   })
 
   describe('Integration tests', () => {
+    beforeEach(() => {
+      inMemoryUserRepository = new InMemoryUsersRepository()
+      sut = new RegisterUseCase(inMemoryUserRepository)
+    })
+
     it('should not be able to register twice with the same email', async () => {
-      const inMemoryUserRepository = new InMemoryUsersRepository()
-
-      const registerUseCase = new RegisterUseCase(inMemoryUserRepository)
-
-      await registerUseCase.execute(user)
+      await sut.execute(user)
 
       await expect(() =>
-        registerUseCase.execute({
+        sut.execute({
           name: 'Not Jhon Doe',
           email: user.email,
           password: 'not_the_same_password',
@@ -86,11 +88,7 @@ describe('Register Use Case', () => {
       ).rejects.toBeInstanceOf(UserAlreadyExistsError)
     })
     it('should be able to register', async () => {
-      const inMemoryUserRepository = new InMemoryUsersRepository()
-
-      const registerUseCase = new RegisterUseCase(inMemoryUserRepository)
-
-      const { user: userResponse } = await registerUseCase.execute(user)
+      const { user: userResponse } = await sut.execute(user)
 
       expect(userResponse).toEqual(
         expect.objectContaining({
