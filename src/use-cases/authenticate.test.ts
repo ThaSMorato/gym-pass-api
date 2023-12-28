@@ -3,6 +3,7 @@ import { hash } from 'bcryptjs'
 import { InMemoryUsersRepository } from '@/repositories/in-memory/in-memory-users-repository'
 import { AuthenticateUseCase } from './authenticate'
 import { IvalidCredentialsError } from './errors/invalid-credentials-errors'
+import { mockedUserRepository } from '@/repositories/mock/mock-user-repository'
 
 const user = {
   name: 'Jhon Doe',
@@ -13,7 +14,7 @@ const user = {
 const findByEmail = vi.fn()
 
 const repository = {
-  create: vi.fn(),
+  ...mockedUserRepository,
   findByEmail,
 }
 

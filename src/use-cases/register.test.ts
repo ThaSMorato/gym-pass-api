@@ -3,6 +3,7 @@ import { RegisterUseCase } from './register'
 import { compare } from 'bcryptjs'
 import { UserAlreadyExistsError } from './errors/user-already-exists'
 import { InMemoryUsersRepository } from '@/repositories/in-memory/in-memory-users-repository'
+import { mockedUserRepository } from '@/repositories/mock/mock-user-repository'
 
 const user = {
   name: 'Jhon Doe',
@@ -21,6 +22,7 @@ const create = vi.fn().mockImplementation((data) => ({
 const findByEmail = vi.fn()
 
 const repository = {
+  ...mockedUserRepository,
   create,
   findByEmail,
 }
