@@ -5,9 +5,11 @@ import { CheckInUseCase } from './check-in'
 import { InMemoryCheckInsRepository } from '@/repositories/in-memory/in-memory-check-ins-repository'
 import { InMemoryGymsRepository } from '@/repositories/in-memory/in-memory-gyms-repository'
 import { Decimal } from '@prisma/client/runtime/library'
+import { MaxDistanceError } from './errors/max-distance-error'
+import { MaxNumberOfCheckInsError } from './errors/max-number-of-check-ins-error'
 
 const userId = 'a_user_id'
-const gymId = 'a_gym_id'
+let gymId = 'a_gym_id'
 
 const latitude = -27.2892852
 const longitude = -49.6401091
@@ -15,7 +17,7 @@ const longitude = -49.6401091
 const distantLatitude = -27.0747279
 const distantLongitude = -49.4889672
 
-const params = {
+let params = {
   userId,
   gymId,
   userLatitude: latitude,
@@ -140,11 +142,25 @@ describe('Register Use Case', () => {
   })
 
   describe('Integration tests', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       inMemoryUserRepository = new InMemoryCheckInsRepository()
       inMemoryGymsRepository = new InMemoryGymsRepository()
-      inMemoryGymsRepository.items.push(gym)
       sut = new CheckInUseCase(inMemoryUserRepository, inMemoryGymsRepository)
+
+      const { id } = await inMemoryGymsRepository.create({
+        latitude,
+        longitude,
+        title: gym.title,
+        description: gym.description,
+        phone: gym.phone,
+      })
+
+      gymId = id
+
+      params = {
+        ...params,
+        gymId: id,
+      }
     })
 
     it('should be able to check in', async () => {
@@ -164,7 +180,9 @@ describe('Register Use Case', () => {
 
       await sut.execute(params)
 
-      await expect(() => sut.execute(params)).rejects.toBeInstanceOf(Error)
+      await expect(() => sut.execute(params)).rejects.toBeInstanceOf(
+        MaxNumberOfCheckInsError,
+      )
     })
 
     it('should be able to check in twice in different days', async () => {
@@ -192,7 +210,9 @@ describe('Register Use Case', () => {
         userLongitude: distantLongitude,
       }
 
-      await expect(() => sut.execute(sutParams)).rejects.toBeInstanceOf(Error)
+      await expect(() => sut.execute(sutParams)).rejects.toBeInstanceOf(
+        MaxDistanceError,
+      )
     })
   })
 })
