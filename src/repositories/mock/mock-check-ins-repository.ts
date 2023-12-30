@@ -6,4 +6,6 @@ export const mockedCheckInsRepository: CheckInsRepository = {
   findByUserIdOnDate: vi.fn(),
   findManyByUserId: vi.fn(),
   countByUserId: vi.fn(),
+  findById: vi.fn(),
+  save: vi.fn(),
 }
