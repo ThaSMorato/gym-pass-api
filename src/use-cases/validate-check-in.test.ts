@@ -3,6 +3,7 @@ import { mockedCheckInsRepository } from '@/repositories/mock/mock-check-ins-rep
 import { InMemoryCheckInsRepository } from '@/repositories/in-memory/in-memory-check-ins-repository'
 import { ValidateCheckInUseCase } from './validate-check-in'
 import { ResourceNotFoundError } from './errors/resource-not-found-error'
+import { LateCheckInValidationError } from './errors/late-check-in-validation-error'
 
 const gymId = 'a_gym_id'
 const userId = 'a_user_id'
@@ -10,7 +11,7 @@ const userId = 'a_user_id'
 let checkInId: string
 
 const checkInResponse = {
-  created_at: new Date(),
+  created_at: new Date(2022, 8, 28, 10, 0, 0),
   gym_id: gymId,
   user_id: userId,
   id: 'a_checkin_id_1',
@@ -41,11 +42,11 @@ describe('Register Use Case', () => {
 
   describe('Unity tests', () => {
     beforeEach(() => {
+      vi.setSystemTime(new Date(2022, 8, 28, 10, 0, 0))
       sut = new ValidateCheckInUseCase(repository)
     })
 
     it('should be able to validate the check in', async () => {
-      vi.setSystemTime(new Date(2022, 8, 28, 10, 0, 0))
       findById.mockResolvedValue(checkInResponse)
 
       const { checkin } = await sut.execute({ checkInId: checkInResponse.id })
@@ -67,7 +68,6 @@ describe('Register Use Case', () => {
     })
 
     it('should not be able to validate an inexistent check in', async () => {
-      vi.setSystemTime(new Date(2022, 8, 28, 10, 0, 0))
       findById.mockResolvedValue(null)
 
       try {
@@ -78,10 +78,25 @@ describe('Register Use Case', () => {
         expect(error).toBeInstanceOf(ResourceNotFoundError)
       }
     })
+
+    it('should not be able to validate a check in after 20 mins of its creation', async () => {
+      findById.mockResolvedValue(checkInResponse)
+      const twentyOneMinutesInMilliseconds = 1000 * 60 * 21
+
+      vi.advanceTimersByTime(twentyOneMinutesInMilliseconds)
+      try {
+        await sut.execute({ checkInId: checkInResponse.id })
+      } catch (error) {
+        expect(findById).toBeCalledTimes(1)
+        expect(save).not.toBeCalled()
+        expect(error).toBeInstanceOf(LateCheckInValidationError)
+      }
+    })
   })
 
   describe('Integration tests', () => {
     beforeEach(async () => {
+      vi.setSystemTime(new Date(2022, 8, 28, 10, 0, 0))
       inMemoryCheckInsRepository = new InMemoryCheckInsRepository()
       sut = new ValidateCheckInUseCase(inMemoryCheckInsRepository)
 
@@ -113,6 +128,16 @@ describe('Register Use Case', () => {
       await expect(() =>
         sut.execute({ checkInId: 'a_not_existence_id' }),
       ).rejects.toBeInstanceOf(ResourceNotFoundError)
+    })
+
+    it('should not be able to validate the check in after 20 minutes of its creation', async () => {
+      const twentyOneMinutesInMilliseconds = 1000 * 60 * 21
+
+      vi.advanceTimersByTime(twentyOneMinutesInMilliseconds)
+
+      await expect(() => sut.execute({ checkInId })).rejects.toBeInstanceOf(
+        LateCheckInValidationError,
+      )
     })
   })
 })
