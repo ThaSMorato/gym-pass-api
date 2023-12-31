@@ -19,13 +19,22 @@ export async function authenticate(
   const { email, password } = authenticateBodySchema.parse(body)
 
   try {
-    await authenticateUseCase.execute({ email, password })
+    const { user } = await authenticateUseCase.execute({ email, password })
+
+    const token = await reply.jwtSign(
+      {},
+      {
+        sign: {
+          sub: user.id,
+        },
+      },
+    )
+
+    return reply.status(200).send({ token })
   } catch (error) {
     if (error instanceof IvalidCredentialsError) {
       return reply.status(400).send({ message: error.message })
     }
     throw error
   }
-
-  return reply.status(200).send()
 }
