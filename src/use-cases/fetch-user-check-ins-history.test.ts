@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockedCheckInsRepository } from '@/repositories/mock/mock-check-ins-repository'
 import { InMemoryCheckInsRepository } from '@/repositories/in-memory/in-memory-check-ins-repository'
-import { FechUserCheckInHistoryUseCase } from './fetch-user-check-ins-history'
+import { FetchUserCheckInsHistoryUseCase } from './fetch-user-check-ins-history'
 
 const userId = 'a_user_id'
 const gymId1 = 'q_gym_1'
@@ -23,7 +23,7 @@ const repository = {
 }
 
 let inMemoryCheckInsRepository: InMemoryCheckInsRepository
-let sut: FechUserCheckInHistoryUseCase
+let sut: FetchUserCheckInsHistoryUseCase
 
 describe('Fetch Check In History Use Case', () => {
   beforeEach(() => {
@@ -32,7 +32,7 @@ describe('Fetch Check In History Use Case', () => {
 
   describe('Unity tests', () => {
     beforeEach(() => {
-      sut = new FechUserCheckInHistoryUseCase(repository)
+      sut = new FetchUserCheckInsHistoryUseCase(repository)
     })
 
     it('should be able to check in', async () => {
@@ -60,7 +60,7 @@ describe('Fetch Check In History Use Case', () => {
   describe('Integration tests', () => {
     beforeEach(async () => {
       inMemoryCheckInsRepository = new InMemoryCheckInsRepository()
-      sut = new FechUserCheckInHistoryUseCase(inMemoryCheckInsRepository)
+      sut = new FetchUserCheckInsHistoryUseCase(inMemoryCheckInsRepository)
 
       await inMemoryCheckInsRepository.create({
         user_id: userId,
