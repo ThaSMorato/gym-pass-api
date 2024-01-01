@@ -11,10 +11,14 @@
     "prisma:type": "prisma generate",
     "migrate:dev": "prisma migrate dev",
     "studio": "prisma studio",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "pretest:e2e" : "npm run test:cpe && npm run test:install-pe",
+    "test:cpe" : "npm link ./prisma/vitest-environment-prisma",
+    "test:install-pe": "npm link vitest-environment-prisma",
+    "test": "vitest run --dir src/use-cases",
+    "test:watch": "vitest --dir src/use-cases",
     "test:cov": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "test:e2e" : "vitest run --dir src/http"
   },
   "keywords": [],
   "author": "Thales Silva Morato <ThaSMorato>",
@@ -33,6 +37,7 @@
     "vitest": "1.1.0"
   },
   "dependencies": {
+    "-": "0.0.1",
     "@fastify/jwt": "7.2.4",
     "@prisma/client": "5.7.1",
     "bcryptjs": "2.4.3",
