@@ -22,14 +22,7 @@ describe('Metrics CheckIn E2E', () => {
   })
 
   it('should be able to list the count of check-ins', async () => {
-    const { token } = await createAndAuthenticateUser(app)
-
-    const {
-      body: { user },
-    } = await request(app.server)
-      .get('/me')
-      .set('Authorization', `Bearer ${token}`)
-      .send()
+    const { token, user } = await createAndAuthenticateUser(app)
 
     const createdGym = await prisma.gym.create({
       data: gym,
