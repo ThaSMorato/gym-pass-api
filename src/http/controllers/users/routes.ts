@@ -12,5 +12,5 @@ export async function usersRoutes(app: FastifyInstance) {
   app.patch('/token/refresh', refresh)
 
   // Autenticated
-  app.get('/me', { onRequest: verifyJwt }, profile)
+  app.get('/me', { onRequest: [verifyJwt] }, profile)
 }
